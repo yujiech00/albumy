@@ -113,3 +113,6 @@ uploads/avatars/*
 !uploads/avatars/.gitkeep
 
 whooshee
+
+# API keys
+api.key
