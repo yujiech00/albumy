@@ -19,7 +19,7 @@ from albumy.models import User, Photo, Tag, Follow, Collect, Comment, Notificati
 from albumy.notifications import push_comment_notification, push_collect_notification
 from albumy.utils import rename_image, resize_image, redirect_back, flash_errors
 
-from albumy.azure_cv_models import computervision_client, computervision_client_local_support
+from albumy.azure_cv_models import computervision_client, computervision_client_local_support, generate_tags_for_local_image, generate_alt_text_or_description_for_local_image
 
 # import openai
 
@@ -141,62 +141,41 @@ def upload():
         filename_s = resize_image(f, filename, current_app.config['ALBUMY_PHOTO_SIZE']['small'])
         filename_m = resize_image(f, filename, current_app.config['ALBUMY_PHOTO_SIZE']['medium'])
         
-        # Get and open the local image
+        '''Azure Computer Vision Models
+        '''
+        # Get the file path for the local image
         file_path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename)
-        local_image = open(file_path, "rb")
-        print(file_path)
         
-        # Call API with local image - tags
-        tags_result_local = computervision_client.tag_image_in_stream(local_image)
-        tags_with_high_confidence = []
-        print("Tags in the local image: ")
-        if (len(tags_result_local.tags) == 0):
-            print("No tags detected.")
-        else:
-            for tag in tags_result_local.tags:
-                print("'{}' with confidence {:.2f}%".format(tag.name, tag.confidence * 100))
-                if tag.confidence*100 > 50:
-                    tags_with_high_confidence.append(tag.name)
-        print(tags_with_high_confidence)
+        # Generate alt text or description for the photo using Azure Computer Vision models - Feature 1
+        caption_with_highest_confidence_text = generate_alt_text_or_description_for_local_image(file_path)
         
-        # Open local image file
-        local_image = open(file_path, "rb")
-        # Call API with local image - descriptions/captions
-        description_result = computervision_client.describe_image_in_stream(local_image)
-        captions_with_high_confidence = []
-        # Get the captions (descriptions) from the response, with confidence level
-        print("Description of local image: ")
-        if (len(description_result.captions) == 0):
-            print("No description detected.")
-        else:
-            for caption in description_result.captions:
-                print("'{}' with confidence {:.2f}%".format(caption.text, caption.confidence * 100))
-                if caption.confidence*100 > 50:
-                    captions_with_high_confidence.append(caption.text)
-        print(captions_with_high_confidence)
+        # Generate tags for the photo using Azure Computer Vision models - Feature 2
+        tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path) 
+        
+        
 
         # Call openai to create ALT text
         
         # Pass openAI the API key
-        openai.api_key = 'os.getenv("OPENAI_API_KEY")' 
+        # openai.api_key = 'os.getenv("OPENAI_API_KEY")' 
 
-        prompt = "Write an alternative text caption for an image that is described using \
-                top keywords: {}".format(', '.join(tags_with_high_confidence))
+        # prompt = "Write an alternative text caption for an image that is described using \
+                # top keywords: {}".format(', '.join(tags_with_high_confidence))
                 
-        alt_text_response = get_completion(prompt)
+        # alt_text_response = get_completion(prompt)
         
-        # add: description = Azure Vision API call
-        # add: tags = Azure Vision API call <- a list
         photo = Photo(
             filename=filename,
             filename_s=filename_s,
             filename_m=filename_m,
-            author=current_user._get_current_object()
-            # add: description = alt_text_response
-            # add: tags = tags
+            author=current_user._get_current_object(),       
+            description = caption_with_highest_confidence_text, # add: description = alt text generated
+            tags =  tags_to_be_attached_to_photo # add: tags 
         )
+
         db.session.add(photo)
         db.session.commit()
+    
     return render_template('main/upload.html')
 
 
