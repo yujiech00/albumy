@@ -197,7 +197,7 @@ $(function () {
     $(document).on('click', '.unfollow-btn', unfollow.bind(this));
     $(document).on('click', '.collect-btn', collect.bind(this));
     $(document).on('click', '.uncollect-btn', uncollect.bind(this));
-
+    
     // hide or show tag edit form
     $('#tag-btn').click(function () {
         $('#tags').hide();
@@ -215,6 +215,15 @@ $(function () {
     $('#cancel-description').click(function () {
         $('#description-form').hide();
         $('#description').show();
+    });
+    // hide or show alt_text edit form
+    $('#alt_text-btn').click(function () {
+        $('#alt_text').hide();
+        $('#alt_text-form').show();
+    });
+    $('#cancel-alt_text').click(function () {
+        $('#alt_text-form').hide();
+        $('#alt_text').show();
     });
     // delete confirm modal
     $('#confirm-delete').on('show.bs.modal', function (e) {

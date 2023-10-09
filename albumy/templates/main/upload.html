@@ -9,21 +9,49 @@
 {% endblock %}
 
 {% block content %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Warning: You can only upload one image each time. </strong>
+        If multiple images are selected, then only the last image selected will be shown in the upload zone and be uploaded. You can cancel or remove unwanted images before uploading them.
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
     <div class="page-header">
         <h1>Upload</h1>
+        <!-- <a class="btn btn-primary btn-sm text-white" style="margin-left:5px" data-toggle="modal" data-target="#instruction-modal"> Instruction</a> -->
     </div>
     <div class="row">
         <div class="col-md-12">
             {{ dropzone.create(action='main.upload') }}
             <a class="btn btn-light float-right" href="{{ url_for('user.index', username=current_user.username) }}">
+            <!-- <a class="btn btn-light float-right" id="upload_done"> -->
                 Done
             </a>
         </div>
     </div>
+    <!-- instruction modal -->
+    <!-- <div class="modal fade" id="instruction-modal" tabindex="-1" role="dialog" aria-labelledby="instructionModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="instructionModalLabel">Note</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body w-100">
+                    <p>An ML-based description or alternative text will be automatically generated for your uploaded picture.</p>
+                    <p>You can edit it in the <b>side bar section</b> of the photo later.</p>
+                </div>
+            </div>
+        </div>
+    </div> -->
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='js/dropzone.min.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='js/dropzone.min.js') }}"></script> -->
+    <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/upload_redirect.js') }}"></script>
     {{ dropzone.config() }}
 {% endblock %}

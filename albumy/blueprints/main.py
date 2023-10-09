@@ -14,14 +14,12 @@ from sqlalchemy.sql.expression import func
 
 from albumy.decorators import confirm_required, permission_required
 from albumy.extensions import db
-from albumy.forms.main import DescriptionForm, TagForm, CommentForm
+from albumy.forms.main import DescriptionForm, TagForm, CommentForm, AltTextForm
 from albumy.models import User, Photo, Tag, Follow, Collect, Comment, Notification
 from albumy.notifications import push_comment_notification, push_collect_notification
 from albumy.utils import rename_image, resize_image, redirect_back, flash_errors
 
 from albumy.azure_cv_models import computervision_client, computervision_client_local_support, generate_tags_for_local_image, generate_alt_text_or_description_for_local_image
-
-# import openai
 
 main_bp = Blueprint('main', __name__)
 
@@ -117,17 +115,6 @@ def get_image(filename):
 def get_avatar(filename):
     return send_from_directory(current_app.config['AVATARS_SAVE_PATH'], filename)
 
-# Can I put this here? Need to think...
-def get_completion(prompt, model="gpt-3.5-turbo"):
-    messages = [{"role": "user", "content": prompt}]
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0.2
-    )
-    
-    return response.choices[0].message["content"]
-
 
 @main_bp.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -152,25 +139,14 @@ def upload():
         # Generate tags for the photo using Azure Computer Vision models - Feature 2
         tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path) 
         
-        
-
-        # Call openai to create ALT text
-        
-        # Pass openAI the API key
-        # openai.api_key = 'os.getenv("OPENAI_API_KEY")' 
-
-        # prompt = "Write an alternative text caption for an image that is described using \
-                # top keywords: {}".format(', '.join(tags_with_high_confidence))
-                
-        # alt_text_response = get_completion(prompt)
-        
         photo = Photo(
             filename=filename,
             filename_s=filename_s,
             filename_m=filename_m,
             author=current_user._get_current_object(),       
             description = caption_with_highest_confidence_text, # add: description = alt text generated
-            tags =  tags_to_be_attached_to_photo # add: tags 
+            tags =  tags_to_be_attached_to_photo, # add: tags
+            alt_text = caption_with_highest_confidence_text # add: alt_text = alt text generated
         )
 
         db.session.add(photo)
@@ -190,10 +166,12 @@ def show_photo(photo_id):
     comment_form = CommentForm()
     description_form = DescriptionForm()
     tag_form = TagForm()
+    alt_text_form = AltTextForm()
 
     description_form.description.data = photo.description
+    alt_text_form.alt_text.data = photo.alt_text
     return render_template('main/photo.html', photo=photo, comment_form=comment_form,
-                           description_form=description_form, tag_form=tag_form,
+                           description_form=description_form, tag_form=tag_form, alt_text_form=alt_text_form,
                            pagination=pagination, comments=comments)
 
 
@@ -293,6 +271,23 @@ def edit_description(photo_id):
         photo.description = form.description.data
         db.session.commit()
         flash('Description updated.', 'success')
+
+    flash_errors(form)
+    return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/photo/<int:photo_id>/alt_text', methods=['POST'])
+@login_required
+def edit_alt_text(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if current_user != photo.author and not current_user.can('MODERATE'):
+        abort(403)
+
+    form = AltTextForm()
+    if form.validate_on_submit():
+        photo.alt_text = form.alt_text.data
+        db.session.commit()
+        flash('Alternative text updated.', 'success')
 
     flash_errors(form)
     return redirect(url_for('.show_photo', photo_id=photo_id))

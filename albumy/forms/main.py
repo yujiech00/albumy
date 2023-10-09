@@ -13,6 +13,11 @@ from wtforms.validators import DataRequired, Optional, Length
 class DescriptionForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional(), Length(0, 500)])
     submit = SubmitField()
+    
+
+class AltTextForm(FlaskForm):
+    alt_text = TextAreaField('Alternative Text', validators=[Optional(), Length(0, 500)])
+    submit = SubmitField()
 
 
 class TagForm(FlaskForm):

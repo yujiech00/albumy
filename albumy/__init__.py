@@ -21,12 +21,17 @@ from albumy.extensions import bootstrap, db, login_manager, mail, dropzone, mome
 from albumy.models import Role, User, Photo, Tag, Follow, Notification, Comment, Collect, Permission
 from albumy.settings import config
 
+# from flask_modals import Modal
+
+# modal = Modal() # added
+
 
 def create_app(config_name=None):
     if config_name is None:
         config_name = os.getenv('FLASK_CONFIG', 'development')
 
     app = Flask('albumy')
+    # modal.init_app(app) # added
     
     app.config.from_object(config[config_name])
 
