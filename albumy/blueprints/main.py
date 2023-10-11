@@ -160,9 +160,9 @@ def upload():
             filename_m=filename_m,
             author=current_user._get_current_object(),       
             # description = caption_with_highest_confidence_text, # add: description = alt text generated
-            description = alt_text_response,
+            # description = "",
             tags =  tags_to_be_attached_to_photo, # add: tags 
-            alt_text = caption_with_highest_confidence_text # add: alt_text = alt text generated
+            alt_text = alt_text_response # add: alt_text = alt text generated
         )
 
         db.session.add(photo)
