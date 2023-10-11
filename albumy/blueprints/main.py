@@ -152,7 +152,7 @@ def upload():
         tags_with_high_confidence, tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path) 
 
         # Call openai to create ALT text based on tags
-        alt_text_response = get_completion(tags_with_high_confidence)
+        alt_text_response = get_alt_completion(tags_with_high_confidence)
         
         photo = Photo(
             filename=filename,
