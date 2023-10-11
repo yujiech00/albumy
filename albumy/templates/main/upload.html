@@ -9,21 +9,53 @@
 {% endblock %}
 
 {% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <!-- <strong>Warning: You can only upload one image each time. </strong>
+                If multiple images are selected, then only the last image selected will be shown in the upload zone and be uploaded. You can cancel or remove unwanted images before uploading them. -->
+                <strong>Instruction:</strong>
+                <ol>
+                    <li>Once a photo has been successfully uploaded with a <b>√</b> mark, clicking the <b>Done</b> button will re-direct you to the detailed page for that photo. You can further modify the photo there. If you upload multiple photos at once, you will be re-directed to the detailed page for the last photo you upload.</li>
+                    <li>Click the <b>Cancel</b> button to cancel upload of all photos just selected.</li>
+                </ol>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="page-header">
         <h1>Upload</h1>
     </div>
     <div class="row">
         <div class="col-md-12">
             {{ dropzone.create(action='main.upload') }}
-            <a class="btn btn-light float-right" href="{{ url_for('user.index', username=current_user.username) }}">
+            <!-- <a class="btn btn-light float-right" href="{{ url_for('user.index', username=current_user.username) }}">
                 Done
-            </a>
+            </a> -->
+            <form class="inline" method="post" action="{{ url_for('user.go_to_the_last_photo_uploaded', username=current_user.username) }}">
+                <input type="hidden" name="placeholder_for_id_of_last_photo_before_upload" value="{{ last_photo_before_upload_id }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-success" style="float:right" title="Finish upload and go to the detailed page for the last photo uploaded">
+                    <span class="oi oi-check"></span> Done
+                </button>
+            </form>
+            <form class="inline" method="post" action="{{ url_for('main.cancel_upload', username=current_user.username) }}" id="cancel_upload_form">
+                <input type="hidden" name="placeholder_for_id_of_last_photo_before_upload" value="{{ last_photo_before_upload_id }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-secondary" style="float:right; margin-right:5px;" title="Cancel upload">
+                    <span class="oi oi-x"></span> Cancel
+                </button>
+            </form>
         </div>
     </div>
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
-    <script src="{{ url_for('static', filename='js/dropzone.min.js') }}"></script>
-    {{ dropzone.config() }}
+    <!-- <script src="{{ url_for('static', filename='js/dropzone.min.js') }}"></script> -->
+    <script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='js/upload_extended.js') }}"></script> -->
+    {{ dropzone.config() }} 
 {% endblock %}

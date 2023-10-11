@@ -5,7 +5,7 @@
     :copyright: © 2018 Grey Li <withlihui@gmail.com>
     :license: MIT, see LICENSE for more details.
 """
-from flask import render_template, flash, redirect, url_for, current_app, request, Blueprint
+from flask import render_template, flash, redirect, url_for, current_app, request, Blueprint, abort
 from flask_login import login_required, current_user, fresh_login_required, logout_user
 
 from albumy.decorators import confirm_required, permission_required
@@ -17,6 +17,8 @@ from albumy.models import User, Photo, Collect
 from albumy.notifications import push_follow_notification
 from albumy.settings import Operations
 from albumy.utils import generate_token, validate_token, redirect_back, flash_errors
+
+import datetime
 
 user_bp = Blueprint('user', __name__)
 
@@ -240,3 +242,19 @@ def delete_account():
         flash('Your are free, goodbye!', 'success')
         return redirect(url_for('main.index'))
     return render_template('user/settings/delete_account.html', form=form)
+
+
+@user_bp.route('/<username>/go_to_the_last_photo_uploaded', methods=['POST'])
+@login_required
+def go_to_the_last_photo_uploaded(username):
+    photo = Photo.query.order_by(Photo.id.desc()).first()
+    last_photo_before_upload_id = request.form.get('placeholder_for_id_of_last_photo_before_upload')
+    # print(photo.id, last_photo_before_upload_id)
+    
+    if current_user != photo.author and not current_user.can('MODERATE'):
+        abort(403)
+        
+    if int(last_photo_before_upload_id) != int(photo.id):
+        return redirect(url_for('main.show_photo', photo_id=photo.id))
+    else:
+        return index(username) 

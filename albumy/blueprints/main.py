@@ -14,7 +14,7 @@ from sqlalchemy.sql.expression import func
 
 from albumy.decorators import confirm_required, permission_required
 from albumy.extensions import db
-from albumy.forms.main import DescriptionForm, TagForm, CommentForm
+from albumy.forms.main import DescriptionForm, TagForm, CommentForm, AltTextForm
 from albumy.models import User, Photo, Tag, Follow, Collect, Comment, Notification
 from albumy.notifications import push_comment_notification, push_collect_notification
 from albumy.utils import rename_image, resize_image, redirect_back, flash_errors
@@ -125,6 +125,14 @@ def get_avatar(filename):
 @confirm_required
 @permission_required('UPLOAD')
 def upload():
+    ''' Get the id of the most recent photo in the database before uploading a new one
+    '''
+    last_photo_before_upload = Photo.query.order_by(Photo.id.desc()).first()
+    if last_photo_before_upload is None:
+        last_photo_before_upload_id = ""
+    else:
+        last_photo_before_upload_id = last_photo_before_upload.id
+    
     if request.method == 'POST' and 'file' in request.files:
         f = request.files.get('file')
         filename = rename_image(f.filename)
@@ -154,12 +162,13 @@ def upload():
             # description = caption_with_highest_confidence_text, # add: description = alt text generated
             description = alt_text_response,
             tags =  tags_to_be_attached_to_photo # add: tags 
+            alt_text = caption_with_highest_confidence_text # add: alt_text = alt text generated
         )
 
         db.session.add(photo)
         db.session.commit()
     
-    return render_template('main/upload.html')
+    return render_template('main/upload.html', last_photo_before_upload_id=last_photo_before_upload_id)
 
 
 @main_bp.route('/photo/<int:photo_id>')
@@ -173,10 +182,12 @@ def show_photo(photo_id):
     comment_form = CommentForm()
     description_form = DescriptionForm()
     tag_form = TagForm()
+    alt_text_form = AltTextForm()
 
     description_form.description.data = photo.description
+    alt_text_form.alt_text.data = photo.alt_text
     return render_template('main/photo.html', photo=photo, comment_form=comment_form,
-                           description_form=description_form, tag_form=tag_form,
+                           description_form=description_form, tag_form=tag_form, alt_text_form=alt_text_form,
                            pagination=pagination, comments=comments)
 
 
@@ -278,6 +289,108 @@ def edit_description(photo_id):
         flash('Description updated.', 'success')
 
     flash_errors(form)
+    return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/photo/<int:photo_id>/alt_text', methods=['POST'])
+@login_required
+def edit_alt_text(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if current_user != photo.author and not current_user.can('MODERATE'):
+        abort(403)
+
+    form = AltTextForm()
+    if form.validate_on_submit():
+        photo.alt_text = form.alt_text.data
+        db.session.commit()
+        flash('Alternative text updated.', 'success')
+
+    flash_errors(form)
+    return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/photo/<int:photo_id>/autogenerate_description', methods=['POST'])
+@login_required
+def autogenerate_description(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if current_user != photo.author and not current_user.can('MODERATE'):
+        abort(403)
+
+    file_path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], photo.filename)
+    # Generate alt text or description for the photo using Azure Computer Vision models - Feature 1
+    caption_with_highest_confidence_text = generate_alt_text_or_description_for_local_image(file_path)
+    
+    photo.description = caption_with_highest_confidence_text
+
+    db.session.commit()
+        
+    return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/photo/<int:photo_id>/autogenerate_tags', methods=['POST'])
+@login_required
+def autogenerate_tags(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if current_user != photo.author and not current_user.can('MODERATE'):
+        abort(403)
+
+    file_path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], photo.filename)
+        
+    # Generate tags for the photo using Azure Computer Vision models - Feature 2
+    tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path) 
+        
+    photo.tags =  tags_to_be_attached_to_photo # add: tags
+
+    db.session.commit()
+        
+    return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/photo/<int:photo_id>/autogenerate_alt_text', methods=['POST'])
+@login_required
+def autogenerate_alt_text(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if current_user != photo.author and not current_user.can('MODERATE'):
+        abort(403)
+
+    file_path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], photo.filename)
+    
+    # Generate alt text or description for the photo using Azure Computer Vision models - Feature 1
+    caption_with_highest_confidence_text = generate_alt_text_or_description_for_local_image(file_path)
+        
+    photo.alt_text = caption_with_highest_confidence_text # add: alt_text = alt text generated
+    
+    db.session.commit()
+        
+    return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/photo/<int:photo_id>/autogenerate_options', methods=['POST'])
+@login_required
+def autogenerate_options(photo_id):
+    photo = Photo.query.get_or_404(photo_id)
+    if current_user != photo.author and not current_user.can('MODERATE'):
+        abort(403)
+    
+    file_path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], photo.filename)
+
+    autogenerate_options_selected = request.form.getlist('autogenerate_options')
+    
+    # Generate alt text or description for the photo using Azure Computer Vision models - Feature 1
+    caption_with_highest_confidence_text = generate_alt_text_or_description_for_local_image(file_path)
+    
+    # Generate tags for the photo using Azure Computer Vision models - Feature 2
+    tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path)
+    
+    if 'description' in autogenerate_options_selected:  
+        photo.description = caption_with_highest_confidence_text
+    if 'tags' in autogenerate_options_selected:
+        photo.tags =  tags_to_be_attached_to_photo
+    if 'alt_text' in autogenerate_options_selected:
+        photo.alt_text = caption_with_highest_confidence_text
+
+    db.session.commit()  
+        
     return redirect(url_for('.show_photo', photo_id=photo_id))
 
 
@@ -425,3 +538,19 @@ def delete_tag(photo_id, tag_id):
 
     flash('Tag deleted.', 'info')
     return redirect(url_for('.show_photo', photo_id=photo_id))
+
+
+@main_bp.route('/cancel_upload', methods=['POST'])
+@login_required
+def cancel_upload():
+    last_photo_before_upload_id = request.form.get('placeholder_for_id_of_last_photo_before_upload')
+    
+    if last_photo_before_upload_id != "":
+        photos = Photo.query.filter(Photo.id > int(last_photo_before_upload_id))
+    
+        for photo in photos:   
+            db.session.delete(photo)
+        
+        db.session.commit()
+        
+    return render_template('main/upload.html', last_photo_before_upload_id=last_photo_before_upload_id)

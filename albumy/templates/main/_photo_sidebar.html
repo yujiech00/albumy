@@ -32,13 +32,21 @@
         <div id="description">
             <p>
                 {% if photo.description %}
+                    <a style="color:#007bff;"><b>Description:</b></a><br>
                     {{ photo.description }}
                 {% endif %}
                 {% if current_user == photo.author %}
                     <a id="description-btn" href="#!">
-                        <small><span class="oi oi-pencil"></span> edit description</small>
+                        <!-- <small><span class="oi oi-pencil"></span> edit description</small> -->
+                        <small><span class="oi oi-pencil"></span> edit </small>
                     </a>
-                {% endif %}
+                    <!-- <form action="{{ url_for('.autogenerate_description', photo_id=photo.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary btn-sm" style="margin-top: -20px;">
+                            <span class="oi oi-laptop"></span> Use the ML suggested description
+                        </button>
+                    </form> -->
+                {% endif %}              
             </p>
         </div>
         {% if current_user == photo.author %}
@@ -54,6 +62,7 @@
         <div id="tags">
             <p>
                 {% if photo.tags %}
+                    <a style="color:#007bff;"><b>Tags:</b></a><br>
                     {% for tag in photo.tags %}
                         <a class="badge badge-light"
                            href="{{ url_for('.show_tag', tag_id=tag.id) }}" target="_blank"><span
@@ -62,8 +71,15 @@
                 {% endif %}
                 {% if current_user == photo.author %}
                     <a id="tag-btn" href="#!">
-                        <small><span class="oi oi-pencil"></span> edit tag</small>
+                        <!-- <small><span class="oi oi-pencil"></span> edit tag</small> -->
+                        <small><span class="oi oi-pencil"></span>edit</small>
                     </a>
+                    <!-- <form action="{{ url_for('.autogenerate_tags', photo_id=photo.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary btn-sm" style="margin-top: -20px;">
+                            <span class="oi oi-laptop"></span> Use the ML suggested tags
+                        </button>
+                    </form> -->
                 {% endif %}
             </p>
         </div>
@@ -81,14 +97,85 @@
                         <a class="dead-link" href="#!"
                            data-href="{{ url_for('.delete_tag', photo_id=photo.id, tag_id=tag.id) }}"
                            data-toggle="modal" data-target="#confirm-delete" title="Delete tag">
-                <span class="badge badge-danger">
-                {{ tag.name }} <span class="oi oi-trash" aria-hidden="true"></span>
-            </span>
+                            <span class="badge badge-danger">
+                                {{ tag.name }} <span class="oi oi-trash" aria-hidden="true"></span>
+                            </span>
                         </a>
                     {% endfor %}
                 {% endif %}
             </div>
         {% endif %}
+        <div id="alt_text">
+            <p>
+                <a style="color:#007bff;"><b>Alternative Text:</b></a><br>
+                {% if photo.alt_text %}               
+                    {{ photo.alt_text }}
+                {% endif %}
+                {% if current_user == photo.author %}
+                    <a id="alt_text-btn" href="#!">
+                        <small><span class="oi oi-pencil"></span>edit</small>
+                    </a>
+                    <!-- <form action="{{ url_for('.autogenerate_alt_text', photo_id=photo.id) }}" method="post">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary btn-sm" style="margin-top: -20px;">
+                            <span class="oi oi-laptop"></span> Use the ML suggested alternative text
+                        </button>
+                    </form> -->
+                {% endif %}
+            </p>
+        </div>
+        {% if current_user == photo.author %}
+            <div id="alt_text-form">
+                <form action="{{ url_for('.edit_alt_text', photo_id=photo.id) }}" method="post">
+                    {{ alt_text_form.csrf_token }}
+                    {{ render_field(alt_text_form.alt_text) }}
+                    <a class="btn btn-light btn-sm" id="cancel-alt_text">Cancel</a>
+                    {{ render_field(alt_text_form.submit, class='btn btn-success btn-sm') }}
+                </form>
+            </div>
+        {% endif %}
+        {% if current_user == photo.author %}
+            <!-- button trigger autogenerated_results_modal -->
+            <div>
+                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#autogenerated_results_modal" style="margin-bottom: 10px;">
+                    <span class="oi oi-laptop"></span> Use ML suggested results
+                </button>
+            </div>
+            <!-- autogenerated_results_modal -->
+            <div class="modal fade" id="autogenerated_results_modal" tabindex="-1" role="dialog" aria-labelledby="autogenerated_results_modal" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Select the ML suggested results to be used</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{{ url_for('.autogenerate_options', photo_id=photo.id) }}" method="post">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="checkbox_description" value="description" name="autogenerate_options">
+                                    <label class="form-check-label" for="inlineCheckbox1">Description</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="checkbox_tags" value="tags" name="autogenerate_options">
+                                    <label class="form-check-label" for="inlineCheckbox2">Tags</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="checkbox_alt_text" value="alt_text" name="autogenerate_options">
+                                    <label class="form-check-label" for="inlineCheckbox3">Alternative Text</label>
+                                </div>
+                                <div style="float: right;">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">OK</button>               
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %} 
         {% if current_user.is_authenticated %}
             {% if current_user.is_collecting(photo) %}
                 <form class="inline" method="post"

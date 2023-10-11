@@ -274,7 +274,8 @@ footer {
 }
 
 /* Photo Page */
-#tag-form, #description-form {
+/* Add style for #alt_text-form */
+#tag-form, #description-form, #alt_text-form {
     display: none;
     margin: 20px 0;
 }

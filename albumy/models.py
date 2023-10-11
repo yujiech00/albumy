@@ -239,6 +239,9 @@ class Photo(db.Model):
     comments = db.relationship('Comment', back_populates='photo', cascade='all')
     collectors = db.relationship('Collect', back_populates='collected', cascade='all')
     tags = db.relationship('Tag', secondary=tagging, back_populates='photos')
+    
+    # db table columns added
+    alt_text = db.Column(db.String(500))
 
 
 @whooshee.register_model('name')
