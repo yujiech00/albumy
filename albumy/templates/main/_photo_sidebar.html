@@ -31,8 +31,9 @@
     <div class="card-body">
         <div id="description">
             <p>
+                <a style="color:#007bff;"><b>Description:</b></a><br>
                 {% if photo.description %}
-                    <a style="color:#007bff;"><b>Description:</b></a><br>
+                    <!-- <a style="color:#007bff;"><b>Description:</b></a><br> -->
                     {{ photo.description }}
                 {% endif %}
                 {% if current_user == photo.author %}
