@@ -66,7 +66,7 @@ def generate_tags_for_local_image(file_path):
     # print(tags_to_be_attached_to_photo)
     # print(db.session.query(Tag.name).distinct().count())
     
-    return tags_to_be_attached_to_photo
+    return tags_with_high_confidence, tags_to_be_attached_to_photo
 
 
 def generate_alt_text_or_description_for_local_image(file_path):

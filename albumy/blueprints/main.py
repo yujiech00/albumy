@@ -21,7 +21,9 @@ from albumy.utils import rename_image, resize_image, redirect_back, flash_errors
 
 from albumy.azure_cv_models import computervision_client, computervision_client_local_support, generate_tags_for_local_image, generate_alt_text_or_description_for_local_image
 
-# import openai
+import openai
+
+from albumy.openai_model import get_completion
 
 main_bp = Blueprint('main', __name__)
 
@@ -117,17 +119,6 @@ def get_image(filename):
 def get_avatar(filename):
     return send_from_directory(current_app.config['AVATARS_SAVE_PATH'], filename)
 
-# Can I put this here? Need to think...
-def get_completion(prompt, model="gpt-3.5-turbo"):
-    messages = [{"role": "user", "content": prompt}]
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=0.2
-    )
-    
-    return response.choices[0].message["content"]
-
 
 @main_bp.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -150,26 +141,18 @@ def upload():
         caption_with_highest_confidence_text = generate_alt_text_or_description_for_local_image(file_path)
         
         # Generate tags for the photo using Azure Computer Vision models - Feature 2
-        tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path) 
-        
-        
+        tags_with_high_confidence, tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path) 
 
-        # Call openai to create ALT text
-        
-        # Pass openAI the API key
-        # openai.api_key = 'os.getenv("OPENAI_API_KEY")' 
-
-        # prompt = "Write an alternative text caption for an image that is described using \
-                # top keywords: {}".format(', '.join(tags_with_high_confidence))
-                
-        # alt_text_response = get_completion(prompt)
+        # Call openai to create ALT text based on tags
+        alt_text_response = get_completion(tags_with_high_confidence)
         
         photo = Photo(
             filename=filename,
             filename_s=filename_s,
             filename_m=filename_m,
             author=current_user._get_current_object(),       
-            description = caption_with_highest_confidence_text, # add: description = alt text generated
+            # description = caption_with_highest_confidence_text, # add: description = alt text generated
+            description = alt_text_response,
             tags =  tags_to_be_attached_to_photo # add: tags 
         )
 
