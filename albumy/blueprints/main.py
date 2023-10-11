@@ -381,13 +381,16 @@ def autogenerate_options(photo_id):
     
     # Generate tags for the photo using Azure Computer Vision models - Feature 2
     tags_with_high_confidence, tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path)
+
     
     if 'description' in autogenerate_options_selected:  
-        photo.description = caption_with_highest_confidence_text
+        #photo.description = caption_with_highest_confidence_text
+        photo.description = get_description_completion(tags_with_high_confidence)
     if 'tags' in autogenerate_options_selected:
         photo.tags =  tags_to_be_attached_to_photo
     if 'alt_text' in autogenerate_options_selected:
-        photo.alt_text = caption_with_highest_confidence_text
+        #photo.alt_text = caption_with_highest_confidence_text
+        photo.alt_text = get_alt_completion(tags_with_high_confidence)
 
     db.session.commit()  
         
