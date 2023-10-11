@@ -337,7 +337,7 @@ def autogenerate_tags(photo_id):
     file_path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], photo.filename)
         
     # Generate tags for the photo using Azure Computer Vision models - Feature 2
-    tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path) 
+    tags_with_high_confidence, tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path) 
         
     photo.tags =  tags_to_be_attached_to_photo # add: tags
 
@@ -380,7 +380,7 @@ def autogenerate_options(photo_id):
     caption_with_highest_confidence_text = generate_alt_text_or_description_for_local_image(file_path)
     
     # Generate tags for the photo using Azure Computer Vision models - Feature 2
-    tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path)
+    tags_with_high_confidence, tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path)
     
     if 'description' in autogenerate_options_selected:  
         photo.description = caption_with_highest_confidence_text
