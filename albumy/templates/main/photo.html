@@ -22,7 +22,7 @@
         <div class="col-md-8">
             <div class="photo">
                 <a href="{{ url_for('.get_image', filename=photo.filename) }}" target="_blank">
-                    <img class="img-fluid alt" src="{{ url_for('.get_image', filename=photo.filename_m) }}" alt="{{ photo.description }}" title="{{ photo.description }}"> <!-- add attri alt and title-->
+                    <img class="img-fluid alt" src="{{ url_for('.get_image', filename=photo.filename_m) }}" alt="{{ photo.alt_text }}" title="{{ photo.alt_text }}"> <!-- add attri alt and title-->
                     <!-- <a style="font-size:small; color:#007bff;"><b>Alt Text: {{ photo.alt_text }}</b></a>-->
                 </a>
             </div>
