@@ -23,7 +23,7 @@ from albumy.azure_cv_models import computervision_client, computervision_client_
 
 import openai
 
-from albumy.openai_model import get_completion
+from albumy.openai_model import get_alt_completion, get_description_completion
 
 main_bp = Blueprint('main', __name__)
 
