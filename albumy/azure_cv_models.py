@@ -25,7 +25,7 @@ subscription_key = credentials.VISION_KEY
 endpoint = credentials.VISION_ENDPOINT
 
 computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
-computervision_client_local_support = ComputerVisionClientOperationsMixin()
+
 '''
 END - Authenticate
 '''
