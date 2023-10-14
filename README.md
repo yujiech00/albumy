@@ -28,6 +28,13 @@ or with Pipenv:
 $ pipenv install --dev
 $ pipenv shell
 ```
+Set up API keys for Azure's Computer Vision and OpenAI's APIs, whereas instructions to generate these can be found at https://portal.azure.com/#view/Microsoft_Azure_ProjectOxford/CognitiveServicesHub/~/ComputerVision and https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key. Create a `credentials.py` file of the following format to store and access these keys + add file to `.gitignore` file for security purposes:
+```
+VISION_KEY="{Insert Vision API Key}"
+VISION_ENDPOINT="{Insert Endpoint}"
+
+OPENAI_API_KEY="{Insert OpenAI API Key}"
+```
 generate fake data then run:
 ```
 $ flask forge
