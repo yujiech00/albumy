@@ -19,7 +19,7 @@ from albumy.models import User, Photo, Tag, Follow, Collect, Comment, Notificati
 from albumy.notifications import push_comment_notification, push_collect_notification
 from albumy.utils import rename_image, resize_image, redirect_back, flash_errors
 
-from albumy.azure_cv_models import computervision_client, computervision_client_local_support, generate_tags_for_local_image, generate_alt_text_or_description_for_local_image
+from albumy.azure_cv_models import computervision_client, generate_tags_for_local_image, generate_alt_text_or_description_for_local_image
 
 import openai
 
