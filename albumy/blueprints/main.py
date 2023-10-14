@@ -140,13 +140,13 @@ def upload():
         filename_s = resize_image(f, filename, current_app.config['ALBUMY_PHOTO_SIZE']['small'])
         filename_m = resize_image(f, filename, current_app.config['ALBUMY_PHOTO_SIZE']['medium'])
         
-        '''Azure Computer Vision Models
+        '''Azure Computer Vision Models and openai Models
         '''
         # Get the file path for the local image
         file_path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename)
         
         # Generate alt text or description for the photo using Azure Computer Vision models - Feature 1
-        caption_with_highest_confidence_text = generate_alt_text_or_description_for_local_image(file_path)
+        # caption_with_highest_confidence_text = generate_alt_text_or_description_for_local_image(file_path)
         
         # Generate tags for the photo using Azure Computer Vision models - Feature 2
         tags_with_high_confidence, tags_to_be_attached_to_photo = generate_tags_for_local_image(file_path) 
