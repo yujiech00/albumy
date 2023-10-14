@@ -28,7 +28,7 @@ or with Pipenv:
 $ pipenv install --dev
 $ pipenv shell
 ```
-Set up API keys for Azure's Computer Vision and OpenAI's APIs, whereas instructions to generate these can be found [here for Azure](https://portal.azure.com/#view/Microsoft_Azure_ProjectOxford/CognitiveServicesHub/~/ComputerVision) and [here for OpenAI](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key). 
+Set up API keys for Azure's Computer Vision and OpenAI's APIs, whereas instructions to generate these can be found [here](https://portal.azure.com/#view/Microsoft_Azure_ProjectOxford/CognitiveServicesHub/~/ComputerVision) for Azure and [here](https://help.openai.com/en/articles/4936850-where-do-i-find-my-secret-api-key) for OpenAI. 
 
 Then, create a `credentials.py` file of the following format to store and access these keys + add file to `.gitignore` file for security purposes:
 ```
